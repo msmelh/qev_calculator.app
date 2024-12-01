@@ -1,7 +1,17 @@
 import streamlit as st
-import pandas as pd
 
-def installation_services_calculator_with_year(panel_rating, home_size, conduit_length, charger_load, year_built):
+# Title and description
+st.title("EV Charger Installation Calculator")
+st.write("Use this app to calculate installation requirements based on key parameters.")
+
+# User Inputs
+panel_rating = st.selectbox("Panel Rating (A)", options=[100, 150, 200])
+home_size = st.selectbox("Home Size", options=["small", "medium", "large"])
+charger_load = st.selectbox("Charger Load (A)", options=[30, 40, 48])  # Multiple amp values
+year_built = st.slider("Year Built", min_value=1900, max_value=2023, step=1)
+
+# Logic to calculate recommendations
+def calculate_recommendations(panel_rating, home_size, charger_load, year_built):
     recommendations = []
     reasons = []
 
@@ -16,17 +26,6 @@ def installation_services_calculator_with_year(panel_rating, home_size, conduit_
         recommendations.append("Main panel upgrade")
         reasons.append("Large homes with panels under 200A are unlikely to support additional loads.")
 
-    if panel_rating >= 150 and home_size in ["medium", "large"]:
-        recommendations.append("Check breaker availability")
-        reasons.append("If no breaker space is available, a sub-panel or load management system may be needed.")
-
-    if conduit_length > 50:
-        recommendations.append("Long conduit run installation")
-        reasons.append("Conduit length over 50 feet may require additional material and labor.")
-    elif conduit_length > 100:
-        recommendations.append("Significant conduit run adjustment")
-        reasons.append("Conduit runs over 100 feet often require specialized installation techniques.")
-
     if year_built < 1980:
         recommendations.append("Inspect wiring and panel age")
         reasons.append("Homes built before 1980 often have older wiring and panels that may need upgrading.")
@@ -38,26 +37,16 @@ def installation_services_calculator_with_year(panel_rating, home_size, conduit_
         recommendations.append("Ensure panel supports high-amperage charger")
         reasons.append("Chargers requiring over 40A may need additional capacity or load management.")
 
-    return {"Recommendations": recommendations, "Reasons": reasons}
+    return recommendations, reasons
 
-# Streamlit UI
-st.title("EV Charger Installation Calculator")
-
-# User inputs
-panel_rating = st.selectbox("Panel Rating (A)", options=[100, 150, 200])
-home_size = st.selectbox("Home Size", options=["small", "medium", "large"])
-conduit_length = st.slider("Conduit Length (ft)", min_value=0, max_value=200, step=5)
-charger_load = st.slider("Charger Load (A)", min_value=20, max_value=60, step=5)
-year_built = st.slider("Year Built", min_value=1900, max_value=2023, step=1)
-
-# Calculate results
-results = installation_services_calculator_with_year(panel_rating, home_size, conduit_length, charger_load, year_built)
+# Generate results
+recommendations, reasons = calculate_recommendations(panel_rating, home_size, charger_load, year_built)
 
 # Display results
 st.subheader("Recommendations")
-for rec in results["Recommendations"]:
+for rec in recommendations:
     st.write(f"- {rec}")
 
 st.subheader("Reasons")
-for reason in results["Reasons"]:
+for reason in reasons:
     st.write(f"- {reason}")
